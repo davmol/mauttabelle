@@ -1,0 +1,16 @@
+[db_config]
+host = localhost
+dbname = osm
+user = postgres
+password = postgres
+port = 5433
+
+[imposm_import]
+cmd = /home/david/ba/imposm_0.6.0/imposm import -config /home/david/ba/imposm_0.6.0/config.json -read /home/david/ba/pbf/germany-latest.osm.pbf -write -overwritecache
+
+[osm_credentials]
+user = kannnix
+password = Abitalismus!1o
+
+[test]
+mkdir = ['mkdir', '/home/david/ba/test2']
