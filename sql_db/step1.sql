@@ -1,3 +1,60 @@
+
+---------------------------------------------------------------------------------------------
+-- Tabelle Mautpunkte mit Multipoint Geometrien erzeugen
+---------------------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS import.mautknoten;
+
+CREATE TABLE IF NOT EXISTS import.mautknoten AS (
+            SELECT * FROM import.mauttabelle
+        );
+
+ALTER TABLE import.mautknoten ADD COLUMN geom geometry(MultiPoint, 3857);
+UPDATE import.mautknoten as m set geom = ST_COLLECT(ST_Transform(ST_SetSRID(ST_MakePoint(m.lon_von, m.lat_von), 4326),3857) , ST_Transform(ST_SetSRID(ST_MakePoint(m.lon_bis, m.lat_bis), 4326),3857));
+
+
+CREATE INDEX idx_mautknoten_id ON import.mautknoten USING btree (id);
+CREATE INDEX idx_mautknoten_abs_id ON import.mautknoten USING btree (abschnitt_id);
+CREATE INDEX idx_mautknoten_geom ON import.mautknoten USING gist (geom);
+ALTER TABLE import.mautknoten CLUSTER ON idx_mautknoten_id;
+ALTER TABLE import.mautknoten CLUSTER ON idx_mautknoten_geom;
+
+---------------------------------------------------------------------------------------------
+-- Zwischenschritt Mautpunkte mit nur Autobahn:
+---------------------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS import.mautpunkte_ab;
+
+
+
+CREATE TABLE IF NOT EXISTS import.mautpunkte_ab AS (
+with mp as (SELECT von as mautknotenname, ST_GEOMETRYN(geom, 1)::geometry(Point, 3857) as geom FROM import.mautknoten WHERE LEFT(strasse,1) = 'A' UNION SELECT bis as mautknotenname, ST_GEOMETRYN(geom, 2)::geometry(Point, 3857) as geom FROM import.mautknoten WHERE LEFT(strasse,1) = 'A' )
+            SELECT
+            ROW_NUMBER() OVER() mautpunkt_ab_id,
+            mp.*
+            FROM mp
+        );
+CREATE INDEX idx_mautpunkte_ab_id ON import.mautpunkte_ab USING btree (mautpunkt_ab_id);
+CREATE INDEX idx_mautpunkte_ab_geom ON import.mautpunkte_ab USING gist (geom);
+
+---------------------------------------------------------------------------------------------
+-- Zwischenschritt Mautpunkte mit nur Bundesstraße:
+---------------------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS import.mautpunkte_bs;
+
+
+
+CREATE TABLE IF NOT EXISTS import.mautpunkte_bs AS (
+with mp as (SELECT von as mautknotenname, ST_GEOMETRYN(geom, 1)::geometry(Point, 3857) as geom FROM import.mautknoten WHERE LEFT(strasse,1) = 'B' UNION SELECT bis as mautknotenname, ST_GEOMETRYN(geom, 2)::geometry(Point, 3857) as geom FROM import.mautknoten WHERE LEFT(strasse,1) = 'B' )
+            SELECT
+            ROW_NUMBER() OVER() mautpunkt_bs_id,
+            mp.*
+            FROM mp
+        );
+CREATE INDEX idx_mautpunkte_bs_id ON import.mautpunkte_bs USING btree (mautpunkt_bs_id);
+CREATE INDEX idx_mautpunkte_bs_geom ON import.mautpunkte_bs USING gist (geom);
+
 ---------------------------------------------------------------------------------------------
 -- 1. Analyseschritt OSM-Daten bereinigen
 ---------------------------------------------------------------------------------------------
@@ -47,8 +104,6 @@ ALTER TABLE import.motorway CLUSTER ON motorway_ID_idx;
 ALTER TABLE import.motorway CLUSTER ON motorway_osm_id_idx;
 ALTER TABLE import.motorway CLUSTER ON motorway_type_idx;
 ALTER TABLE import.motorway CLUSTER ON motorway_ref_idx;
-
-
 
 --- secondary primary
 

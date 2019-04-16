@@ -1,3 +1,3 @@
 import main
 
-main.update_mautabelle_csv()
+main.update_mautabelle()

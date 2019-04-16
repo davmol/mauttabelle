@@ -10,7 +10,7 @@ password = import_config("config.txt", "db_config","password")
 port = import_config("config.txt", "db_config","port")
 
 
-conn_string ="host='{}' dbname='{}' user='{}' password='{}' port='{}'".format(host, db_name, user, password, port)
+conn_string ="host='{}' dbname='{}' user='{}' password='{}' port='{}'".format(host, db_name, user, "xxx", port)
 #conn_string ="host='localhost' dbname='osm' user='postgres' password='postgres'"
 print(conn_string)
 print("Datenbankverbindung aufbauen: {}".format(conn_string))
@@ -18,7 +18,7 @@ print("")
 
 
 
-def db_execute(sql, values):
+def sql_execute(sql, values):
     try:
         conn = psycopg2.connect(conn_string)
 
@@ -40,6 +40,27 @@ def db_execute(sql, values):
             print("return rows")
             return rows'''
 
+
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+
+
+def sqlfile_exectute(sqlfile):
+
+
+    try:
+        conn = psycopg2.connect(conn_string)
+
+        cursor = conn.cursor()
+        sqlfile = open(sqlfile, 'r')
+        cursor.execute(sqlfile.read())
+        rows = cursor
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return rows
 
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)

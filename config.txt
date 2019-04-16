@@ -12,5 +12,12 @@ cmd = /home/david/ba/imposm_0.6.0/imposm import -config /home/david/ba/imposm_0.
 user = kannnix
 password = Abitalismus!1o
 
-[test]
-mkdir = ['mkdir', '/home/david/ba/test2']
+[sql_files]
+mautabelle_import = /Users/david/BA/mauttabelle/sql_db/mautabelle_import.sql
+step1 = /Users/david/BA/mauttabelle/sql_db/step1.sql
+step2 = /Users/david/BA/mauttabelle/sql_db/step2.sql
+step3 = /Users/david/BA/mauttabelle/sql_db/step3.sql
+step4 = /Users/david/BA/mauttabelle/sql_db/step4.sql
+step5 = /Users/david/BA/mauttabelle/sql_db/step5.sql
+
+
